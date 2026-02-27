@@ -1,5 +1,8 @@
-# Chaos-based-Image-encryption
-A Python implementation of a chaotic image encryption scheme with statistical obfuscation, presented as part of a research paper. The algorithm operates on full RGB color images and achieves near-perfect histogram uniformity on encrypted output.
+# Chaotic Image Encryption using Nonlinear Prime-Seeded Maps
+
+A Python implementation of a chaotic RGB image encryption scheme with full statistical obfuscation and CPA hardening, accompanying a research paper.
+
+---
 
 ## Algorithm Overview
 
@@ -23,6 +26,10 @@ Original Image
 
 Decryption applies each step in exact reverse order.
 
+**Key derivation:** For each channel `c`:
+```
+seed = SHA-256(f"{user_key}:{pixel_count}:{c}")[:64-bit]
+```
 
 **Chaotic map (vectorized over all pixels at once):**
 ```
@@ -40,6 +47,7 @@ where `p[i]` is drawn from a prime table indexed by `(i² mod 38)`, α = π.
 ```
 .
 ├── chaotic_image_encryptor.py   # Core encryption/decryption script
+├── experiments.py               # Reproduces paper figures (Fig 3 & Fig 4)
 ├── requirements.txt             # Python dependencies
 ├── README.md                    # This file
 └── .gitignore
@@ -77,6 +85,25 @@ python chaotic_image_encryptor.py --mode decrypt --input encrypted.png --output 
 python chaotic_image_encryptor.py --mode encrypt --input ./images/ --output ./encrypted/ --key 12345
 ```
 
+> ⚠️ **Same key must be used for decryption. There is no key recovery.**
+
+---
+
+## Reproducing Paper Figures
+
+### Figure 3 — Salt-and-Pepper Noise Robustness
+```bash
+python experiments.py --experiment noise --input tiger.png --key 12345
+```
+Produces decrypted outputs at noise densities η = 0.2, 0.4, 0.5, 0.7, 0.9.
+
+### Figure 4 — Ciphertext Occlusion Robustness
+```bash
+python experiments.py --experiment occlusion --input tiger.png --key 12345
+```
+Produces 8 images: 4 occluded-encrypted + 4 decrypted, for square/rect masks at 25%/50%.
+
+---
 
 ## Security Evaluation
 
@@ -100,6 +127,7 @@ All tests conducted on 128×128 RGB images per IEEE standard methodology.
 | G | 159.32 → 127.25 | 61.10 → 73.89 | 1.97 → 3.9999 / 4.0 |
 | B | 136.01 → 127.89 | 105.35 → 74.03 | 1.82 → 3.9999 / 4.0 |
 
+
 ---
 
 ## Security Properties
@@ -115,6 +143,3 @@ All tests conducted on 128×128 RGB images per IEEE standard methodology.
 ---
 
 
-## License
-
-MIT License — free to use, modify, and distribute with attribution.
